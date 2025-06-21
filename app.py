@@ -30,8 +30,10 @@ model = RandomForestRegressor()
 model.fit(X_scaled, Y_scaled.ravel())
 
 # Prediction API
-@app.route('/predict', methods=['POST'])
-def predict():
+@app.route('/')
+def index():
+    return "API is running"
+
     try:
         data = request.get_json()
         print("Received data:", data)
