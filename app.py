@@ -27,20 +27,28 @@ model.fit(X_scaled, Y_scaled.ravel())
 # API route
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.get_json()
-    variety = data['variety']
-    rainfall = float(data['rainfall'])
-
     try:
+        data = request.get_json()
+        print("Received data:", data)
+
+        variety = data['variety']
+        rainfall = data['rainfall']
+
+        if variety not in le.classes_:
+            return jsonify({"error": "Invalid variety"}), 400
+
         variety_encoded = le.transform([variety])[0]
-    except:
-        return jsonify({'error': 'Invalid variety'}), 400
+        features = [[variety_encoded, rainfall]]
 
-    input_data = sc_X.transform([[variety_encoded, rainfall]])
-    prediction_scaled = model.predict(input_data)
-    prediction = sc_Y.inverse_transform([[prediction_scaled[0]]])[0][0]
+        prediction = model.predict(features)[0]
+        print("Prediction:", prediction)
 
-    return jsonify({'prediction': round(prediction, 2)})
+        return jsonify({"prediction": float(prediction)})
+
+    except Exception as e:
+        print("Error:", str(e))
+        return jsonify({"error": "Cannot process your request", "details": str(e)}), 500
+
 
 import os
 
